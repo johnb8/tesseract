@@ -190,49 +190,6 @@ endif()
 #
 ###############################################################################
 
-if(CPPAN_BUILD)
-    if (STATIC)
-        set(CPPAN_BUILD_SHARED_LIBS 0)
-    else()
-        set(CPPAN_BUILD_SHARED_LIBS 1)
-    endif()
-    add_subdirectory(.cppan)
-elseif (SW_BUILD)
-    find_package(SW REQUIRED)
-    if (STATIC)
-        set(SW_BUILD_SHARED_LIBS 0)
-    else()
-        set(SW_BUILD_SHARED_LIBS 1)
-    endif()
-    sw_add_package(
-        org.sw.demo.danbloomberg.leptonica-master
-        org.sw.demo.libarchive.libarchive
-    )
-    if (BUILD_TRAINING_TOOLS)
-        sw_add_package(
-            org.sw.demo.gnome.pango.pangocairo
-            org.sw.demo.unicode.icu.i18n
-        )
-    endif()
-    sw_execute()
-else()
-    find_package(PkgConfig)
-    if(PKG_CONFIG_EXECUTABLE AND NOT Leptonica_DIR)
-        pkg_check_modules(Leptonica REQUIRED lept>=${MINIMUM_LEPTONICA_VERSION})
-        link_directories(${Leptonica_LIBRARY_DIRS})
-    else()
-        find_package(Leptonica ${MINIMUM_LEPTONICA_VERSION} REQUIRED CONFIG)
-    endif()
-    if (NOT Leptonica_FOUND)
-        message(FATAL_ERROR "Cannot find required library Leptonica. Quitting!")
-    endif(NOT Leptonica_FOUND)
-
-    find_package(LibArchive)
-    if(LibArchive_FOUND)
-        set(HAVE_LIBARCHIVE ON)
-    endif()
-endif()
-
 find_package(OpenCL QUIET)
 
 
