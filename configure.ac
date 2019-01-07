@@ -99,6 +99,9 @@ case "${host_os}" in
         OPENCL_INC=""
         AM_CONDITIONAL([ADD_RT], false)
         ;;
+    *android*)
+        AM_CONDITIONAL([ADD_RT], false)
+        ;;
     powerpc-*-darwin*)
         OPENCL_LIBS=""
         ;;
@@ -112,6 +115,7 @@ esac
 AM_CONDITIONAL([AVX_OPT], false)
 AM_CONDITIONAL([AVX2_OPT], false)
 AM_CONDITIONAL([SSE41_OPT], false)
+AM_CONDITIONAL([MARCH_NATIVE_OPT], false)
 
 AX_CHECK_COMPILE_FLAG([-mavx], [avx=true], [avx=false])
 if $avx; then
@@ -126,6 +130,11 @@ fi
 AX_CHECK_COMPILE_FLAG([-msse4.1], [sse41=true], [sse41=false])
 if $sse41; then
     AM_CONDITIONAL([SSE41_OPT], true)
+fi
+
+AX_CHECK_COMPILE_FLAG([-march=native], [arch_native=true], [arch_native=false])
+if $arch_native; then
+    AM_CONDITIONAL([MARCH_NATIVE_OPT], true)
 fi
 
 AC_ARG_WITH([extra-includes],
@@ -463,7 +472,6 @@ fi
 
 # Output files
 AC_CONFIG_FILES([Makefile tesseract.pc])
-AC_CONFIG_FILES([langtests/Makefile])
 AC_CONFIG_FILES([src/api/Makefile])
 AC_CONFIG_FILES([src/api/tess_version.h])
 AC_CONFIG_FILES([src/arch/Makefile])
@@ -481,7 +489,6 @@ AC_CONFIG_FILES([src/wordrec/Makefile])
 AC_CONFIG_FILES([tessdata/Makefile])
 AC_CONFIG_FILES([tessdata/configs/Makefile])
 AC_CONFIG_FILES([tessdata/tessconfigs/Makefile])
-AC_CONFIG_FILES([unlvtests/Makefile])
 AC_CONFIG_FILES([unittest/Makefile])
 AC_CONFIG_FILES([java/Makefile])
 AC_CONFIG_FILES([java/com/Makefile])

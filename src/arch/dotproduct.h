@@ -1,10 +1,8 @@
 ///////////////////////////////////////////////////////////////////////
-// File:        gettimeofday.cpp
-// Description: Implementation of gettimeofday based on leptonica
-// Author:      tomp2010, zdenop
-// Created:     Tue Feb 21 21:38:00 CET 2012
+// File:        dotproduct.h
+// Description: Native dot product function.
 //
-// (C) Copyright 2012, Google Inc.
+// (C) Copyright 2018, Google Inc.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,19 +12,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 ///////////////////////////////////////////////////////////////////////
 
-#include <allheaders.h>
-#include "gettimeofday.h"
+#ifndef TESSERACT_ARCH_DOTPRODUCT_H_
+#define TESSERACT_ARCH_DOTPRODUCT_H_
 
-int gettimeofday(struct timeval *tp, struct timezone *tzp) {
-  l_int32 sec, usec;
-  if (tp == nullptr)
-    return -1;
+namespace tesseract {
 
-  l_getCurrentTime(&sec, &usec);
-  tp->tv_sec = sec;
-  tp->tv_usec = usec;
-  return 0;
-}
+// Computes and returns the dot product of the n-vectors u and v.
+double DotProductNative(const double* u, const double* v, int n);
+
+}  // namespace tesseract.
+
+#endif  // TESSERACT_ARCH_DOTPRODUCT_H_

@@ -12,10 +12,10 @@
 
 This package contains an **OCR engine** - `libtesseract` and a **command line program** - `tesseract`.
 Tesseract 4 adds a new neural net (LSTM) based OCR engine which is focused
-on line recognition, but also still supports the legacy Tesseract OCR engine of 
-Tesseract 3 which works by recognizing character patterns. Compatibility with 
-Tesseract 3 is enabled by using the Legacy OCR Engine mode (--oem 0). 
-It also needs traineddata files which support the legacy engine, for example 
+on line recognition, but also still supports the legacy Tesseract OCR engine of
+Tesseract 3 which works by recognizing character patterns. Compatibility with
+Tesseract 3 is enabled by using the Legacy OCR Engine mode (--oem 0).
+It also needs traineddata files which support the legacy engine, for example
 those from the tessdata repository.
 
 The lead developer is Ray Smith. The maintainer is Zdenko Podobny.
@@ -24,7 +24,7 @@ and GitHub's log of [contributors](https://github.com/tesseract-ocr/tesseract/gr
 
 Tesseract has **unicode (UTF-8) support**, and can **recognize more than 100 languages** "out of the box".
 
-Tesseract supports **various output formats**: plain-text, hocr(html), pdf, tsv, invisible-text-only pdf.
+Tesseract supports **various output formats**: plain text, hOCR (HTML), PDF, invisible-text-only PDF, TSV. The master branch also has experimental support for ALTO (XML) output.
 
 You should note that in many cases, in order to get better OCR results, you'll need to **[improve the quality](https://github.com/tesseract-ocr/tesseract/wiki/ImproveQuality) of the image** you are giving Tesseract.
 
@@ -65,6 +65,8 @@ Basic **[command line usage](https://github.com/tesseract-ocr/tesseract/wiki/Com
 
 For more information about the various command line options use `tesseract --help` or `man tesseract`.
 
+Examples can be found in the [wiki](https://github.com/tesseract-ocr/tesseract/wiki/Command-Line-Usage#simplest-invocation-to-ocr-an-image).
+
 ## For developers
 
 Developers can use `libtesseract` [C](https://github.com/tesseract-ocr/tesseract/blob/master/src/api/capi.h) or [C++](https://github.com/tesseract-ocr/tesseract/blob/master/src/api/baseapi.h) API to build their own application. If you need bindings to `libtesseract` for other programming languages, please see the [wrapper](https://github.com/tesseract-ocr/tesseract/wiki/AddOns#tesseract-wrappers) section on AddOns wiki page.
@@ -98,6 +100,9 @@ Please report an issue only for a **bug**, not for asking questions.
     limitations under the License.
 
 **NOTE**: This software depends on other packages that may be licensed under different open source licenses.
+
+Tesseract uses [Leptonica library](http://leptonica.com/) which essentially
+uses a [BSD 2-clause license](http://leptonica.com/about-the-license.html).
 
 ## Latest Version of README
 

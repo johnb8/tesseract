@@ -64,12 +64,19 @@ if (STATIC)
     set(LIBRARY_TYPE)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CLANG 1)
+endif()
+
 if (WIN32)
     if (MSVC)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-        add_definitions(-DNOMINMAX)
-
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /openmp /utf-8")
+        if (CLANG)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fopenmp /utf-8")
+        else()
+            add_definitions(-DNOMINMAX)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /openmp /utf-8")
+        endif()
     endif()
 
     set(LIB_Ws2_32 Ws2_32)
@@ -82,7 +89,9 @@ endif()
 if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
 
-    set(LIB_pthread pthread)
+    if (NOT ANDROID)
+        set(LIB_pthread pthread)
+    endif()
 endif()
 
 ###############################################################################
@@ -156,7 +165,6 @@ include_directories(src/dict)
 include_directories(src/lstm)
 include_directories(src/opencl)
 include_directories(src/textord)
-include_directories(src/vs2010/port)
 include_directories(src/viewer)
 include_directories(src/wordrec)
 
@@ -193,17 +201,13 @@ file(GLOB tesseract_hdr
     src/viewer/*.h
     src/wordrec/*.h
 )
-if (WIN32)
-    file(GLOB tesseract_win32_src "src/vs2010/port/*.cpp")
-    file(GLOB tesseract_win32_hdr "src/vs2010/port/*.h")
-    set(tesseract_src ${tesseract_src} ${tesseract_win32_src})
-    set(tesseract_hdr ${tesseract_hdr} ${tesseract_win32_hdr})
-endif()
 
 set(tesseract_src ${tesseract_src}
     src/api/baseapi.cpp
     src/api/capi.cpp
     src/api/renderer.cpp
+    src/api/altorenderer.cpp
+    src/api/hocrrenderer.cpp
     src/api/pdfrenderer.cpp
 )
 
@@ -214,19 +218,24 @@ if (WIN32)
             ${tesseract_hdr}
             ${CMAKE_CURRENT_SOURCE_DIR}/src/vs2010/tesseract/resource.h)
         set(tesseract_rsc ${CMAKE_CURRENT_BINARY_DIR}/vs2010/tesseract/libtesseract.rc)
-        set_source_files_properties(
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/dotproductsse.cpp
-            PROPERTIES COMPILE_DEFINITIONS __SSE4_1__)
-        set_source_files_properties(
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/intsimdmatrixsse.cpp
-            PROPERTIES COMPILE_DEFINITIONS __SSE4_1__)
-        set_source_files_properties(
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/dotproductavx.cpp
-            PROPERTIES COMPILE_FLAGS "/arch:AVX")
-        set_source_files_properties(
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/intsimdmatrixavx2.cpp
-            PROPERTIES COMPILE_FLAGS "/arch:AVX2")
-    endif()
+        if (NOT CLANG)
+            set_source_files_properties(
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/dotproductsse.cpp
+                PROPERTIES COMPILE_DEFINITIONS __SSE4_1__)
+            set_source_files_properties(
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/intsimdmatrixsse.cpp
+                PROPERTIES COMPILE_DEFINITIONS __SSE4_1__)
+            set_source_files_properties(
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/dotproductavx.cpp
+                PROPERTIES COMPILE_FLAGS "/arch:AVX")
+            set_source_files_properties(
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/intsimdmatrixavx2.cpp
+                PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+            set_source_files_properties(
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/simdetect.cpp
+                PROPERTIES COMPILE_FLAGS "/DAVX /DAVX2 /DSSE4_1")
+        endif()  # NOT CLANG
+    endif()  # MSVC
 else()
     set_source_files_properties(
             ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/dotproductsse.cpp
@@ -240,6 +249,9 @@ else()
     set_source_files_properties(
             ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/intsimdmatrixavx2.cpp
             PROPERTIES COMPILE_FLAGS "-mavx2")
+    set_source_files_properties(
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/arch/simdetect.cpp
+            PROPERTIES COMPILE_FLAGS "-DAVX -DAVX2 -DSSE4_1")
 endif()
 
 add_library                     (libtesseract ${LIBRARY_TYPE} ${tesseract_src} ${tesseract_hdr}
@@ -271,6 +283,13 @@ else()
     export(TARGETS libtesseract APPEND FILE ${CMAKE_CURRENT_BINARY_DIR}/TesseractTargets.cmake)
 endif()
 
+if (WIN32 AND CLANG)
+    # Workaround for "libomp.lib is not automatically added on Windows"
+    # see: http://lists.llvm.org/pipermail/openmp-dev/2015-August/000857.html
+    # TODO: Find better way how to set Clang OpenMP library for linking on Windows
+    target_link_libraries       (libtesseract "c:\\Program Files\\LLVM\\lib\\libomp.lib")
+endif()
+
 ########################################
 # EXECUTABLE tesseractmain
 ########################################
@@ -287,8 +306,6 @@ target_link_libraries           (tesseract libtesseract)
 
 if (BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt)
     add_subdirectory(googletest)
-    add_executable(tesseract_tests tests/tesseracttests.cpp)
-    target_link_libraries(tesseract_tests gtest_main)
 endif()
 
 if (BUILD_TRAINING_TOOLS)

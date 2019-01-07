@@ -73,6 +73,7 @@ build/*
 *.a
 *.class
 *.jar
+__pycache__
 
 # tessdata
 *.traineddata
@@ -101,7 +102,6 @@ kernel*.bin
 /unittest/*_test
 /unittest/primesbitvector
 /unittest/primesmap
-/unittest/tesseracttests
 
 # generated files from unlvtests
 times.txt
